@@ -25,9 +25,8 @@ let cantidad = 0;
 let totalEnProductos =0;
 let precioTotal =  document.getElementById("precioTotal");
 let productosTotal = document.getElementById("productosTotal");
-// alertError.style.display="none";
-// alertError.innerHTML="";
-
+let btnClear = document.getElementById("btnClear");
+let datos = []; //new array
 let btnAgregar = document.getElementById("btnAgregar");
 //genera un precio al azar
 function getPrecio(){
@@ -76,16 +75,83 @@ precio = getPrecio();
 costoTotal += precio * cantidad;
 precioTotal.innerHTML = "$" + costoTotal.toFixed(2);
 // se realiza la tabla para agregar los archivos productos
+
+localStorage.setItem("contadorProductos", contador);//Se guarda información en la memoria local
+localStorage.setItem("totalEnProductos", totalEnProductos);
+localStorage.setItem("costoTotal", costoTotal);
+
 let row = `<tr>
      <td>${contador}</td>
      <td>${txtNombre.value}</td>
      <td>${txtNumber.value}</td>
      <td>${precio}</td>
-</tr>`
+</tr>`;
 cuerpoTabla[0].insertAdjacentHTML("beforeend", row);
+let elemento = `{
+         "id": ${contador},
+     "nombre": "${txtNombre.value}",
+     "cantidad": ${txtNumber.value},
+     "precio": ${precio}
+}`;
+
+datos.push(JSON.parse(elemento)); //Convertimos la cadena elemento en objeto
+//console.log(elemento);
+localStorage.setItem("datos", JSON.stringify(datos) ); //convertimos el objeto en string 
+
 txtNombre.value= "";
 txtNumber.value="";
 txtNombre.focus();
 
+});// aqui termina el evento click
+//el evento  blur hace lo contrario de focus
+txtNombre.addEventListener("blur", function(event){
+    event.preventDefault();
+    event.target.value = event.target.value.trim();
+}
+);
+txtNumber.addEventListener("blur", function(event){
+    event.preventDefault();
+   event.target.value = event.target.value.trim();
 });
+window.addEventListener("load", function(event){
+    let tmpContador= localStorage.getItem("contadorProductos", contador);
 
+    if(tmpContador !=null){
+        contador = tmpContador;
+        contadorProductos.innerHTML =contador;
+    }
+    let tmp = localStorage.getItem("totalEnProductos", totalEnProductos);
+    if(tmp !=null){
+        totalEnProductos = parseInt(tmp);
+        productosTotal.innerHTML=totalEnProductos;
+    }
+    tmp = localStorage.getItem("costoTotal");
+    if(tmp!=null){
+        costoTotal= parseFloat(tmp);
+        precioTotal.innerHTML= "$ "+ costoTotal.toFixed(2);
+    }
+    tmp =localStorage.getItem("datos", JSON.stringify(datos) ); //convertimos el objeto en string 
+if(tmp!=null){
+    datos = JSON.parse(tmp);
+    datos.forEach(element =>{
+        cuerpoTabla[0].innerHTML += `<tr>
+            <th> ${element.id}</th>
+        <td>${element.nombre}</td>
+        <td> ${element.cantidad}</td>
+        <td>$ ${element.precio}</td>
+   </tr>`;
+    })
+}
+})
+btnClear.addEventListener("click", function(event){
+    event.preventDefault();
+    contador =0;
+    contadorProductos.innerHTML = contador;
+    totalEnProductos=0;
+    productosTotal.innerHTML=totalEnProductos;
+    costoTotal=0;
+    precioTotal.innerHTML="$ "+ costoTotal.toFixed(2);
+    cuerpoTabla[0].innerHTML="";
+
+    localStorage.clear();
+})
